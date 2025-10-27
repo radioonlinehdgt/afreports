@@ -128,7 +128,7 @@ def generate():
     draw_line(f"Agreement Id: {agreement}")
     draw_separator()
     draw_line("")
-    draw_line(f"Details of the revenue generated for {owner} through the insertion of digital audio ads in its digital media, under the terms of the respective agreement.", "Courier-Bold", 10)
+    draw_line(f"Details of the revenue generated for {owner} through the insertion of digital audio ads in its digital media, under the terms of the respective agreement.")
     draw_separator()
 
     for name, amt in items:
