@@ -90,23 +90,24 @@ def generate():
 
 
     def draw_line(text, font="Courier", size=10, leading=14):
-    """Dibuja texto con saltos automáticos respetando los márgenes reales"""
-    nonlocal y
-    c.setFont(font, size)
-    max_width = page_width - 2 * margin
-    words = text.split()
-    line = ""
-    for word in words:
-        test_line = f"{line} {word}".strip()
-        if c.stringWidth(test_line, font, size) <= max_width:
-            line = test_line
-        else:
+        """Dibuja texto con saltos automáticos respetando los márgenes reales"""
+        nonlocal y
+        c.setFont(font, size)
+        max_width = page_width - 2 * margin
+        words = text.split()
+        line = ""
+        for word in words:
+            test_line = f"{line} {word}".strip()
+            if c.stringWidth(test_line, font, size) <= max_width:
+                line = test_line
+            else:
+                c.drawString(x, y, line)
+                y -= leading
+                line = word
+        if line:
             c.drawString(x, y, line)
             y -= leading
-            line = word
-    if line:
-        c.drawString(x, y, line)
-        y -= leading
+
 
     
     
@@ -145,6 +146,7 @@ def generate():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+
 
 
 
