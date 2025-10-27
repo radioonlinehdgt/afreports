@@ -30,21 +30,136 @@ def requires_auth(f):
         return f(*args, **kwargs)
     return decorated
 
-# --- Interfaz simple ---
+# --- Diccionario de contratos activos ---
+CONTRACTS = {
+    "DEC022022": "ANA SOPHIA TAMAYO CORDERO",
+    "1f9730e1c32a48aba7284dc8e5496cc7f373b2be": "BIDGEAR JOINT STOCK COMPANY"
+}
+
+# --- Interfaz mejorada ---
 INDEX_HTML = """
 <!doctype html>
+<html>
+<head>
 <title>AF STREAM - Revenue Report Generator</title>
+<style>
+    body { font-family: Arial, sans-serif; padding: 20px; max-width: 700px; margin: 0 auto; }
+    h2 { color: #333; }
+    label { display: block; margin-top: 15px; font-weight: bold; }
+    input[type="text"], input[type="date"], select, textarea { 
+        width: 100%; 
+        padding: 8px; 
+        margin-top: 5px; 
+        box-sizing: border-box;
+        font-family: monospace;
+    }
+    .inline-group { display: flex; gap: 10px; }
+    .inline-group > div { flex: 1; }
+    button { 
+        margin-top: 20px; 
+        padding: 12px 24px; 
+        background: #007bff; 
+        color: white; 
+        border: none; 
+        cursor: pointer; 
+        font-size: 16px;
+    }
+    button:hover { background: #0056b3; }
+    .footer { margin-top: 20px; font-size: 0.9em; color: #666; }
+</style>
+</head>
+<body>
 <h2>AF STREAM - Revenue Report Generator</h2>
-<form method=post action="/generate">
-  Mes y Año: <input type="text" name="month" placeholder="May 2025" required><br><br>
-  Fecha del reporte: <input type="text" name="date" placeholder="June 1, 2025" required><br><br>
-  Agreement Id: <input type="text" name="agreement" placeholder="1f97..." required size=40><br><br>
-  Dueño / Cliente: <input type="text" name="owner" placeholder="BIDGEAR JOINT STOCK COMPANY" required size=50><br><br>
-  Radios (una por línea: radio, monto):<br>
-  <textarea name="lines" rows=10 cols=60 placeholder="mangabuddy.com, 1200" required></textarea><br><br>
-  <button type="submit">Generar PDF (hoja carta)</button>
+<form method="post" action="/generate">
+  
+  <label>Mes y Año:</label>
+  <div class="inline-group">
+    <div>
+      <select name="month_name" id="month_name" required>
+        <option value="">Seleccionar mes</option>
+        <option value="January">January</option>
+        <option value="February">February</option>
+        <option value="March">March</option>
+        <option value="April">April</option>
+        <option value="May">May</option>
+        <option value="June">June</option>
+        <option value="July">July</option>
+        <option value="August">August</option>
+        <option value="September">September</option>
+        <option value="October">October</option>
+        <option value="November">November</option>
+        <option value="December">December</option>
+      </select>
+    </div>
+    <div>
+      <select name="year" id="year" required>
+        <option value="">Año</option>
+      </select>
+    </div>
+  </div>
+  <input type="hidden" name="month" id="month_combined">
+  
+  <label>Fecha del reporte:</label>
+  <input type="date" name="date_raw" id="date_raw" required>
+  <input type="hidden" name="date" id="date_formatted">
+  
+  <label>Agreement Id:</label>
+  <select name="agreement" id="agreement" required>
+    <option value="">Seleccionar contrato</option>
+    """ + "".join([f'<option value="{k}">{k[:20]}... - {v}</option>' for k, v in CONTRACTS.items()]) + """
+  </select>
+  
+  <label>Dueño / Cliente:</label>
+  <input type="text" name="owner" id="owner" readonly style="background: #f0f0f0;" required>
+  
+  <label>Radios (una por línea: radio, monto):</label>
+  <textarea name="lines" rows="10" placeholder="mangabuddy.com, 1200" required></textarea>
+  
+  <button type="submit">Generar PDF</button>
 </form>
-<p style="font-size:0.9em;color:#666">Protegido con usuario: <b>admin</b> (contraseña en variable REPORT_PASS)</p>
+
+<div class="footer">
+  Protegido con usuario: <b>admin</b> (contraseña en variable REPORT_PASS)
+</div>
+
+<script>
+// Generar años (últimos 5 y próximos 5)
+const yearSelect = document.getElementById('year');
+const currentYear = new Date().getFullYear();
+for (let i = currentYear - 5; i <= currentYear + 5; i++) {
+    const option = document.createElement('option');
+    option.value = i;
+    option.textContent = i;
+    if (i === currentYear) option.selected = true;
+    yearSelect.appendChild(option);
+}
+
+// Combinar mes y año antes de enviar
+document.querySelector('form').addEventListener('submit', function(e) {
+    const month = document.getElementById('month_name').value;
+    const year = document.getElementById('year').value;
+    document.getElementById('month_combined').value = month + ' ' + year;
+    
+    // Formatear fecha
+    const dateRaw = document.getElementById('date_raw').value;
+    if (dateRaw) {
+        const date = new Date(dateRaw + 'T00:00:00');
+        const months = ['January', 'February', 'March', 'April', 'May', 'June', 
+                       'July', 'August', 'September', 'October', 'November', 'December'];
+        const formatted = months[date.getMonth()] + ' ' + date.getDate() + ', ' + date.getFullYear();
+        document.getElementById('date_formatted').value = formatted;
+    }
+});
+
+// Auto-llenar Dueño/Cliente cuando se selecciona Agreement Id
+const contracts = """ + str(CONTRACTS).replace("'", '"') + """;
+document.getElementById('agreement').addEventListener('change', function() {
+    const agreementId = this.value;
+    document.getElementById('owner').value = contracts[agreementId] || '';
+});
+</script>
+</body>
+</html>
 """
 
 @app.route("/")
@@ -144,7 +259,7 @@ def generate():
         draw_text(separator)
     
     # Encabezado
-    draw_text("AF STREAM", "Courier", 11, bold=True)
+    draw_text("AF STREAM, LLC", "Courier", 11, bold=True)
     draw_text(f"Revenue Report – {month}")
     draw_text(f"Date: {date}")
     draw_text(f"Agreement Id: {agreement}")
@@ -152,6 +267,7 @@ def generate():
     # Texto de detalles
     details_text = f"Details of the revenue generated for {owner} through the insertion of digital audio ads in its digital media, under the terms of the respective agreement."
     draw_wrapped_text(details_text)
+    draw_text("")  # Salto de línea
     draw_separator()
 
     # Items
@@ -192,4 +308,3 @@ def generate():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
-
