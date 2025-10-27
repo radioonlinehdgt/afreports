@@ -3,14 +3,11 @@ from flask import Flask, request, render_template_string, send_file, abort, Resp
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import cm
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.platypus import Paragraph
+from reportlab.lib.enums import TA_LEFT
 import os
 from functools import wraps
-import textwrap
-try:
-    import pyphen
-    HYPHEN_AVAILABLE = True
-except ImportError:
-    HYPHEN_AVAILABLE = False
 
 app = Flask(__name__)
 
@@ -85,130 +82,109 @@ def generate():
     # --- Crear PDF tamaño carta con márgenes uniformes de 3cm ---
     buffer = BytesIO()
     page_width, page_height = letter
-    margin = 3 * cm  # márgenes de 3 cm en todos los lados
+    margin = 3 * cm
 
     c = canvas.Canvas(buffer, pagesize=letter)
     x = margin
     y = page_height - margin
 
-    # Calcular ancho disponible en puntos
+    # Calcular ancho disponible
     available_width = page_width - 2 * margin
     
-    # Configurar fuente y calcular caracteres por línea
+    # Configurar fuente
     font_name = "Courier"
     font_size = 10
-    c.setFont(font_name, font_size)
+    line_height = 14
     
-    # Calcular aprox cuántos caracteres caben (Courier es monospace)
-    # En Courier 10pt, cada caracter mide aproximadamente 6 puntos de ancho
-    char_width = c.stringWidth("X", font_name, font_size)
-    chars_per_line = int(available_width / char_width) - 2  # -2 para margen de seguridad
-
-    # Inicializar hyphenator si está disponible
-    if HYPHEN_AVAILABLE:
-        hyphenator = pyphen.Pyphen(lang='en_US')
-    
-    def wrap_text_with_hyphen(text, width):
-        """Divide el texto usando hyphenation para mejor apariencia"""
-        if not HYPHEN_AVAILABLE:
-            return textwrap.wrap(text, width=width)
-        
-        words = text.split()
-        lines = []
-        current_line = []
-        current_length = 0
-        
-        for word in words:
-            word_length = len(word)
-            space_length = 1 if current_line else 0
-            
-            # Si la palabra cabe en la línea actual
-            if current_length + space_length + word_length <= width:
-                current_line.append(word)
-                current_length += space_length + word_length
-            else:
-                # Si la palabra es muy larga, dividirla con guiones
-                if word_length > width and current_length == 0:
-                    # Intentar dividir con hyphenation
-                    hyphenated = hyphenator.inserted(word, hyphen='-')
-                    parts = hyphenated.split('-')
-                    
-                    for i, part in enumerate(parts):
-                        if i < len(parts) - 1:
-                            part = part + '-'
-                        
-                        if current_length + len(part) <= width:
-                            current_line.append(part)
-                            current_length += len(part)
-                        else:
-                            if current_line:
-                                lines.append(' '.join(current_line))
-                            current_line = [part]
-                            current_length = len(part)
-                else:
-                    # Guardar línea actual y empezar nueva
-                    if current_line:
-                        lines.append(' '.join(current_line))
-                    current_line = [word]
-                    current_length = word_length
-        
-        if current_line:
-            lines.append(' '.join(current_line))
-        
-        return lines if lines else ['']
-
-    def draw_line(text, font="Courier", size=10, leading=14):
-        """Dibuja líneas con salto automático si el texto es largo"""
+    def draw_text(text, font="Courier", size=10, bold=False):
+        """Dibuja texto simple en una línea"""
         nonlocal y
-        c.setFont(font, size)
-        # Ajustar el ancho del wrap según el espacio disponible
-        wrapped = wrap_text_with_hyphen(text, chars_per_line)
-        for line in wrapped:
-            # Verificar que la línea no exceda el ancho disponible
-            text_width = c.stringWidth(line, font, size)
-            if text_width > available_width:
-                # Si aún excede, truncar
-                while text_width > available_width and len(line) > 0:
-                    line = line[:-1]
-                    text_width = c.stringWidth(line, font, size)
-            c.drawString(x, y, line)
-            y -= leading
-
+        if bold:
+            c.setFont(f"{font}-Bold", size)
+        else:
+            c.setFont(font, size)
+        c.drawString(x, y, text)
+        y -= line_height
+    
+    def draw_wrapped_text(text, font="Courier", size=10):
+        """Dibuja texto con wrapping automático usando Paragraph"""
+        nonlocal y
+        
+        # Crear estilo para el párrafo
+        style = ParagraphStyle(
+            'CustomStyle',
+            fontName=font,
+            fontSize=size,
+            leading=line_height,
+            leftIndent=0,
+            rightIndent=0,
+            alignment=TA_LEFT,
+            wordWrap='LTR'
+        )
+        
+        # Crear párrafo
+        para = Paragraph(text, style)
+        
+        # Calcular alto necesario
+        w, h = para.wrap(available_width, 1000)
+        
+        # Dibujar el párrafo
+        para.drawOn(c, x, y - h)
+        y -= h
+    
     def draw_separator():
-        """Dibuja una línea separadora que se ajusta al ancho disponible"""
+        """Dibuja línea separadora"""
         nonlocal y
-        separator = "-" * chars_per_line
-        draw_line(separator)
-
-    draw_line("AF STREAM, LLC", "Courier-Bold", 11)
-    draw_line(f"Revenue Report – {month}")
-    draw_line(f"Date: {date}")
-    draw_line(f"Agreement Id: {agreement}")
+        # Calcular cuántos guiones caben
+        char_width = c.stringWidth("-", font_name, font_size)
+        num_dashes = int(available_width / char_width)
+        separator = "-" * num_dashes
+        draw_text(separator)
+    
+    # Encabezado
+    draw_text("AF STREAM, LLC", "Courier", 11, bold=True)
+    draw_text(f"Revenue Report – {month}")
+    draw_text(f"Date: {date}")
+    draw_text(f"Agreement Id: {agreement}")
     draw_separator()
-    draw_line("")
-    draw_line(f"Details of the revenue generated for {owner} through the insertion of digital audio ads in its digital media, under the terms of the respective agreement.")
+    y -= line_height  # Espacio extra
+    
+    # Texto de detalles
+    details_text = f"Details of the revenue generated for {owner} through the insertion of digital audio ads in its digital media, under the terms of the respective agreement."
+    draw_wrapped_text(details_text)
+    
     draw_separator()
 
+    # Items
     for name, amt in items:
         amt_str = "${:,.2f}".format(amt)
-        # Calcular espacio disponible para el nombre
-        space_for_amount = len(amt_str) + 2  # +2 para espacios
-        max_name_len = chars_per_line - space_for_amount
+        # Calcular espacio disponible
+        space_needed = len(amt_str) + 1
+        name_width = available_width - c.stringWidth(amt_str + " ", font_name, font_size)
         
-        if len(name) > max_name_len:
-            name = name[:max_name_len-3] + "..."
+        # Truncar nombre si es necesario
+        while c.stringWidth(name, font_name, font_size) > name_width and len(name) > 0:
+            name = name[:-4] + "..."
         
-        space = chars_per_line - len(name) - len(amt_str)
-        line = f"{name}{' ' * space}{amt_str}"
-        draw_line(line)
+        # Calcular espacios necesarios
+        text_width = c.stringWidth(name + amt_str, font_name, font_size)
+        space_width = c.stringWidth(" ", font_name, font_size)
+        num_spaces = int((available_width - text_width) / space_width)
+        
+        line = f"{name}{' ' * num_spaces}{amt_str}"
+        draw_text(line)
 
+    # Total
     draw_separator()
     total_str = f"${total:,.2f}"
-    space_for_total = chars_per_line - len("TOTAL") - len(total_str)
-    draw_line(f"TOTAL{' ' * space_for_total}{total_str}", "Courier-Bold", 10)
+    total_label = "TOTAL"
+    text_width = c.stringWidth(total_label + total_str, font_name, font_size)
+    space_width = c.stringWidth(" ", font_name, font_size)
+    num_spaces = int((available_width - text_width) / space_width)
+    draw_text(f"{total_label}{' ' * num_spaces}{total_str}", "Courier", 10, bold=True)
     draw_separator()
-    draw_line("")
-    draw_line("End of Report")
+    y -= line_height
+    draw_text("End of Report")
 
     c.showPage()
     c.save()
