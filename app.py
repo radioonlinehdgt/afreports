@@ -259,7 +259,7 @@ def generate():
         draw_text(separator)
     
     # Encabezado
-    draw_text("AF STREAM, LLC", "Courier", 11, bold=True)
+    draw_text("AF STREAM", "Courier", 11, bold=True)
     draw_text(f"Revenue Report – {month}")
     draw_text(f"Date: {date}")
     draw_text(f"Agreement Id: {agreement}")
@@ -307,4 +307,5 @@ def generate():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+
 
