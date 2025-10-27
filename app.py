@@ -267,7 +267,6 @@ def generate():
     # Texto de detalles
     details_text = f"Details of the revenue generated for {owner} through the insertion of digital audio ads in its digital media, under the terms of the respective agreement."
     draw_wrapped_text(details_text)
-    draw_text("")  # Salto de línea
     draw_separator()
 
     # Items
@@ -308,3 +307,4 @@ def generate():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+
