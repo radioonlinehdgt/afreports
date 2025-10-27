@@ -144,7 +144,7 @@ def generate():
         draw_text(separator)
     
     # Encabezado
-    draw_text("AF STREAM, LLC", "Courier", 11, bold=True)
+    draw_text("AF STREAM", "Courier", 11, bold=True)
     draw_text(f"Revenue Report – {month}")
     draw_text(f"Date: {date}")
     draw_text(f"Agreement Id: {agreement}")
@@ -152,7 +152,6 @@ def generate():
     # Texto de detalles
     details_text = f"Details of the revenue generated for {owner} through the insertion of digital audio ads in its digital media, under the terms of the respective agreement."
     draw_wrapped_text(details_text)
-    draw_text("")  # Salto de línea
     draw_separator()
 
     # Items
@@ -193,3 +192,4 @@ def generate():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+
