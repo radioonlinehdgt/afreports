@@ -1,133 +1,173 @@
-# app.py
+from flask import Flask, render_template_string, request, send_file, Response
 from io import BytesIO
-from flask import Flask, request, render_template_string, send_file, abort
-from reportlab.lib.pagesizes import mm
+from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
+from reportlab.lib.units import cm
+from datetime import datetime
 import os
-from functools import wraps
-from flask import Response
 
 app = Flask(__name__)
 
-# Basic auth decorator
-def check_auth(username, password):
-    return username == 'admin' and password == os.getenv('REPORT_PASS', '')
+# --- Configuración de login simple ---
+USERNAME = "admin"
+PASSWORD = os.getenv("REPORT_PASS", "1234")
 
-def authenticate():
-    return Response(
-        'Authentication required', 401,
-        {'WWW-Authenticate': 'Basic realm="Login Required"'}
-    )
-
-def requires_auth(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        auth = request.authorization
-        if not auth or not check_auth(auth.username, auth.password):
-            return authenticate()
-        return f(*args, **kwargs)
-    return decorated
-
-INDEX_HTML = """
-<!doctype html>
-<title>AF STREAM - Revenue Ticket Generator</title>
-<h2>AF STREAM - Revenue Ticket Generator</h2>
-<form method=post action="/generate">
-  Mes y Año: <input type="text" name="month" placeholder="May 2025" required><br><br>
-  Fecha del reporte: <input type="text" name="date" placeholder="June 1, 2025" required><br><br>
-  Agreement Id: <input type="text" name="agreement" placeholder="1f97..." required size=40><br><br>
-  Dueño / Cliente: <input type="text" name="owner" placeholder="BIDGEAR JOINT STOCK COMPANY" required size=50><br><br>
-  Radios (una por línea: radio, monto):<br>
-  <textarea name="lines" rows=10 cols=60 placeholder="mangabuddy.com, 1200" required></textarea><br><br>
-  <button type="submit">Generar PDF (ticket)</button>
-</form>
-<p style="font-size:0.9em;color:#666">Protegido con usuario: <b>admin</b> (contraseña en variable REPORT_PASS)</p>
+# --- HTML del formulario ---
+HTML_FORM = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AF STREAM - Revenue Report</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #111; color: #eee; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        form { background: #1c1c1c; padding: 30px; border-radius: 12px; box-shadow: 0 0 10px rgba(255,255,255,0.1); width: 420px; }
+        input, textarea { width: 100%; padding: 8px; margin: 6px 0; border-radius: 6px; border: none; font-size: 14px; }
+        input[type="submit"] { background: #0078ff; color: white; cursor: pointer; font-weight: bold; }
+        input[type="submit"]:hover { background: #005fcc; }
+        label { font-weight: bold; color: #ccc; }
+        h2 { text-align: center; color: #fff; }
+    </style>
+</head>
+<body>
+    <form method="POST" action="/generate">
+        <h2>📄 Revenue Report</h2>
+        <label>Owner Name:</label>
+        <input type="text" name="owner" required>
+        <label>Month and Year:</label>
+        <input type="text" name="period" placeholder="e.g., September 2025" required>
+        <label>Date of Report:</label>
+        <input type="text" name="date" value="{{ today }}" required>
+        <label>Agreement ID:</label>
+        <input type="text" name="agreement" required>
+        <label>Radio List and Amounts:</label>
+        <textarea name="details" rows="8" placeholder="Example:\nradio1.com  $100.00\nradio2.com  $200.00" required></textarea>
+        <input type="submit" value="Generate PDF">
+    </form>
+</body>
+</html>
 """
 
-@app.route("/")
-@requires_auth
-def index():
-    return render_template_string(INDEX_HTML)
+# --- Página de login simple ---
+LOGIN_PAGE = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - AF STREAM Reports</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #111; color: #eee; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        form { background: #1c1c1c; padding: 30px; border-radius: 12px; box-shadow: 0 0 10px rgba(255,255,255,0.1); width: 320px; }
+        input { width: 100%; padding: 8px; margin: 6px 0; border-radius: 6px; border: none; font-size: 14px; }
+        input[type="submit"] { background: #0078ff; color: white; cursor: pointer; font-weight: bold; }
+        input[type="submit"]:hover { background: #005fcc; }
+        h2 { text-align: center; color: #fff; }
+    </style>
+</head>
+<body>
+    <form method="POST" action="/login">
+        <h2>🔐 Login</h2>
+        <input type="text" name="username" placeholder="Username" required>
+        <input type="password" name="password" placeholder="Password" required>
+        <input type="submit" value="Enter">
+    </form>
+</body>
+</html>
+"""
 
+# --- Autenticación simple ---
+@app.route("/", methods=["GET"])
+def home():
+    auth = request.authorization
+    if not auth or not (auth.username == USERNAME and auth.password == PASSWORD):
+        return Response('Login required', 401, {'WWW-Authenticate': 'Basic realm="Login Required"'})
+    today = datetime.now().strftime("%B %d, %Y")
+    return render_template_string(HTML_FORM, today=today)
+
+# --- Generar PDF ---
 @app.route("/generate", methods=["POST"])
-@requires_auth
-def generate():
-    month = request.form.get("month","").strip()
-    date = request.form.get("date","").strip()
-    agreement = request.form.get("agreement","").strip()
-    owner = request.form.get("owner","").strip()
-    lines_raw = request.form.get("lines","").strip()
+def generate_pdf():
+    owner = request.form["owner"]
+    period = request.form["period"]
+    date = request.form["date"]
+    agreement = request.form["agreement"]
+    details = request.form["details"].strip()
 
-    # parse lines
-    items = []
-    total = 0.0
-    for ln in lines_raw.splitlines():
-        ln = ln.strip()
-        if not ln: continue
-        if ',' in ln:
-            name, amount = ln.split(',',1)
-            try:
-                amt = float(amount.replace('$','').replace(',','').strip())
-            except:
-                amt = 0.0
-            items.append((name.strip(), amt))
-            total += amt
-        else:
-            # if no comma, consider whole line name and zero amount
-            items.append((ln, 0.0))
-
-    # create PDF in memory (ticket width 80mm)
     buffer = BytesIO()
-    width_mm = 80
-    # convert mm to points (1 mm = 2.83465 points)
-    page_width = width_mm * 2.83465
-    # set a tall height; reportlab needs a fixed pagesize; we'll use 200mm height (~ enough) but text won't overflow for reasonable content
-    page_height = 200 * 2.83465
+    pdf = canvas.Canvas(buffer, pagesize=letter)
 
-    c = canvas.Canvas(buffer, pagesize=(page_width, page_height))
-    x = 10
-    y = page_height - 15
+    # Configurar márgenes (5 cm en todos los lados)
+    margin = 5 * cm
+    width, height = letter
+    usable_width = width - 2 * margin
+    y = height - margin
 
-    # monospaced-like look
-    c.setFont("Courier", 9)
+    pdf.setFont("Helvetica-Bold", 14)
+    pdf.drawCentredString(width / 2, y, "AF STREAM, LLC")
+    y -= 30
 
-    def draw_line(text):
-        nonlocal y
-        c.drawString(x, y, text)
-        y -= 12
+    pdf.setFont("Helvetica-Bold", 12)
+    pdf.drawCentredString(width / 2, y, f"Revenue Report – {period}")
+    y -= 20
 
-    draw_line("AF STREAM, LLC")
-    draw_line(f"Revenue Report – {month}")
-    draw_line(f"Date: {date}")
-    draw_line(f"Agreement Id: {agreement}")
-    draw_line("")
-    draw_line(f"Details of the revenue generated for {owner}")
-    draw_line("-" * 28)
+    pdf.setFont("Helvetica", 10)
+    pdf.drawString(margin, y, f"Date: {date}")
+    y -= 15
+    pdf.drawString(margin, y, f"Agreement Id: {agreement}")
+    y -= 25
 
-    for name, amt in items:
-        # format amount with commas and two decimals
-        amt_str = "${:,.2f}".format(amt)
-        # pad/truncate name so columns align visually
-        max_name_len = 24
-        if len(name) > max_name_len:
-            name = name[:max_name_len-3] + "..."
-        # create line with spacing
-        space = max_name_len - len(name) + 1
-        line = f"{name}{' ' * space}{amt_str}"
-        draw_line(line)
+    pdf.setFont("Helvetica", 10)
+    text = pdf.beginText(margin, y)
+    text.setLeading(15)
+    text.textLines(
+        f"Details of the revenue generated for {owner} through the insertion of digital audio ads "
+        "in its digital media, where AF STREAM utilizes its advertising technology "
+        "in accordance with the terms of the respective agreement.\n"
+    )
+    pdf.drawText(text)
 
-    draw_line("-" * 28)
-    draw_line(f"TOTAL{' ' * 18}${total:,.2f}")
-    draw_line("-" * 28)
-    draw_line("")
-    draw_line("End of Report")
+    y = text.getY() - 20
 
-    c.showPage()
-    c.save()
+    pdf.setFont("Courier", 10)
+    pdf.drawString(margin, y, "-" * 80)
+    y -= 15
+    pdf.drawString(margin, y, f"{'Radio Station':<40}{'Total':>20}")
+    y -= 10
+    pdf.drawString(margin, y, "-" * 80)
+    y -= 15
+
+    lines = details.split("\n")
+    for line in lines:
+        pdf.drawString(margin, y, line)
+        y -= 15
+
+    pdf.drawString(margin, y, "-" * 80)
+    y -= 15
+
+    # Calcular total (solo si hay números)
+    total = 0.0
+    for line in lines:
+        parts = line.split("$")
+        if len(parts) > 1:
+            try:
+                total += float(parts[1].replace(",", "").strip())
+            except ValueError:
+                pass
+
+    pdf.drawString(margin, y, f"{'TOTAL':<40}${total:,.2f}")
+    y -= 15
+    pdf.drawString(margin, y, "-" * 80)
+    y -= 30
+
+    pdf.setFont("Helvetica-Oblique", 9)
+    pdf.drawCentredString(width / 2, y, "End of Report")
+
+    pdf.showPage()
+    pdf.save()
     buffer.seek(0)
 
-    filename = f"Revenue_{month.replace(' ','_')}.pdf"
-    return send_file(buffer, as_attachment=True, download_name=filename, mimetype='application/pdf')
+    return send_file(buffer, as_attachment=True, download_name=f"Revenue_{period.replace(' ', '_')}.pdf", mimetype="application/pdf")
+
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    app.run(host="0.0.0.0", port=10000)
