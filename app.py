@@ -146,7 +146,7 @@ def generate():
     draw_separator()
     total_str = f"${total:,.2f}"
     space_for_total = chars_per_line - len("TOTAL") - len(total_str)
-    draw_line(f"TOTAL{' ' * space_for_total}{total_str}")
+    draw_line(f"TOTAL{' ' * space_for_total}{total_str}", "Courier-Bold", 10)
     draw_separator()
     draw_line("")
     draw_line("End of Report")
