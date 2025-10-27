@@ -5,7 +5,7 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.units import cm
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import Paragraph
-from reportlab.lib.enums import TA_LEFT
+from reportlab.lib.enums import TA_LEFT, TA_JUSTIFY
 import os
 from functools import wraps
 
@@ -118,7 +118,7 @@ def generate():
             leading=line_height,
             leftIndent=0,
             rightIndent=0,
-            alignment=TA_LEFT,
+            alignment=TA_JUSTIFY,
             wordWrap='LTR'
         )
         
