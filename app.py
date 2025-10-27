@@ -1,11 +1,11 @@
 from io import BytesIO
-from flask import Flask, request, render_template_string, send_file, abort, Response
+from flask import Flask, request, render_template_string, send_file, Response
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import cm
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.styles import ParagraphStyle
 from reportlab.platypus import Paragraph
-from reportlab.lib.enums import TA_LEFT, TA_JUSTIFY
+from reportlab.lib.enums import TA_JUSTIFY
 import os
 from functools import wraps
 
@@ -147,19 +147,16 @@ def generate():
     draw_text(f"Date: {date}")
     draw_text(f"Agreement Id: {agreement}")
     draw_separator()
-    y -= line_height  # Espacio extra
     
-    # Texto de detalles
+    # Texto de detalles con espaciado mínimo
     details_text = f"Details of the revenue generated for {owner} through the insertion of digital audio ads in its digital media, under the terms of the respective agreement."
     draw_wrapped_text(details_text)
-    
+    y -= 2  # Pequeño espacio antes del separador
     draw_separator()
 
     # Items
     for name, amt in items:
         amt_str = "${:,.2f}".format(amt)
-        # Calcular espacio disponible
-        space_needed = len(amt_str) + 1
         name_width = available_width - c.stringWidth(amt_str + " ", font_name, font_size)
         
         # Truncar nombre si es necesario
@@ -183,7 +180,7 @@ def generate():
     num_spaces = int((available_width - text_width) / space_width)
     draw_text(f"{total_label}{' ' * num_spaces}{total_str}", "Courier", 10, bold=True)
     draw_separator()
-    y -= line_height
+    
     draw_text("End of Report")
 
     c.showPage()
