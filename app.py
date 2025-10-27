@@ -119,7 +119,9 @@ def generate():
             leftIndent=0,
             rightIndent=0,
             alignment=TA_JUSTIFY,
-            wordWrap='LTR'
+            wordWrap='LTR',
+            spaceBefore=0,
+            spaceAfter=0
         )
         
         # Crear párrafo
@@ -128,8 +130,8 @@ def generate():
         # Calcular alto necesario
         w, h = para.wrap(available_width, 1000)
         
-        # Dibujar el párrafo
-        para.drawOn(c, x, y - h)
+        # Dibujar el párrafo en la posición actual
+        para.drawOn(c, x, y - h + line_height)
         y -= h
     
     def draw_separator():
@@ -147,11 +149,10 @@ def generate():
     draw_text(f"Date: {date}")
     draw_text(f"Agreement Id: {agreement}")
     draw_separator()
-    
-    # Texto de detalles con espaciado mínimo
+    # Texto de detalles
     details_text = f"Details of the revenue generated for {owner} through the insertion of digital audio ads in its digital media, under the terms of the respective agreement."
     draw_wrapped_text(details_text)
-    y -= 2  # Pequeño espacio antes del separador
+    draw_text("")  # Salto de línea
     draw_separator()
 
     # Items
