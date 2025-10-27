@@ -103,7 +103,7 @@ def generate():
     draw_line(f"Date: {date}")
     draw_line(f"Agreement Id: {agreement}")
     draw_line("")
-    draw_line(f"Details of the revenue generated for {owner}")
+    draw_line(f"Details of the revenue generated for {owner} through the insertion of digital audio ads in its digital media, under the terms of the respective agreement.")
     draw_line("-" * 90)
 
     for name, amt in items:
@@ -116,10 +116,13 @@ def generate():
         draw_line(line)
 
     draw_line("-" * 90)
+    c.setFont("Courier-Bold", 10)
     draw_line(f"TOTAL{' ' * 34}${total:,.2f}")
+    c.setFont("Courier", 10)
     draw_line("-" * 90)
     draw_line("")
     draw_line("End of Report")
+
 
     c.showPage()
     c.save()
@@ -130,3 +133,4 @@ def generate():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+
