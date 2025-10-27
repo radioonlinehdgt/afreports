@@ -88,6 +88,7 @@ def generate():
 
     c.setFont("Courier", 10)
 
+
     def draw_line(text, font="Courier", size=10, leading=14):
     """Dibuja texto con saltos automáticos respetando los márgenes reales"""
     nonlocal y
@@ -107,6 +108,7 @@ def generate():
         c.drawString(x, y, line)
         y -= leading
 
+    
     
     draw_line("AF STREAM, LLC", "Courier-Bold", 11)
     draw_line(f"Revenue Report – {month}")
@@ -143,6 +145,7 @@ def generate():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+
 
 
 
