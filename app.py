@@ -89,14 +89,24 @@ def generate():
     c.setFont("Courier", 10)
 
     def draw_line(text, font="Courier", size=10, leading=14):
-        """Dibuja líneas con salto automático si el texto es largo"""
-        nonlocal y
-        c.setFont(font, size)
-        max_width = page_width - 2 * margin
-        wrapped = textwrap.wrap(text, width=90)  # controla ancho del texto
-        for line in wrapped:
+    """Dibuja texto con saltos automáticos respetando los márgenes reales"""
+    nonlocal y
+    c.setFont(font, size)
+    max_width = page_width - 2 * margin
+    words = text.split()
+    line = ""
+    for word in words:
+        test_line = f"{line} {word}".strip()
+        if c.stringWidth(test_line, font, size) <= max_width:
+            line = test_line
+        else:
             c.drawString(x, y, line)
             y -= leading
+            line = word
+    if line:
+        c.drawString(x, y, line)
+        y -= leading
+
 
     draw_line("AF STREAM, LLC", "Courier-Bold", 11)
     draw_line(f"Revenue Report – {month}")
@@ -133,4 +143,5 @@ def generate():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+
 
