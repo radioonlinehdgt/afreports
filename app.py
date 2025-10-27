@@ -6,6 +6,11 @@ from reportlab.lib.units import cm
 import os
 from functools import wraps
 import textwrap
+try:
+    import pyphen
+    HYPHEN_AVAILABLE = True
+except ImportError:
+    HYPHEN_AVAILABLE = False
 
 app = Flask(__name__)
 
@@ -99,12 +104,65 @@ def generate():
     char_width = c.stringWidth("X", font_name, font_size)
     chars_per_line = int(available_width / char_width) - 2  # -2 para margen de seguridad
 
+    # Inicializar hyphenator si está disponible
+    if HYPHEN_AVAILABLE:
+        hyphenator = pyphen.Pyphen(lang='en_US')
+    
+    def wrap_text_with_hyphen(text, width):
+        """Divide el texto usando hyphenation para mejor apariencia"""
+        if not HYPHEN_AVAILABLE:
+            return textwrap.wrap(text, width=width)
+        
+        words = text.split()
+        lines = []
+        current_line = []
+        current_length = 0
+        
+        for word in words:
+            word_length = len(word)
+            space_length = 1 if current_line else 0
+            
+            # Si la palabra cabe en la línea actual
+            if current_length + space_length + word_length <= width:
+                current_line.append(word)
+                current_length += space_length + word_length
+            else:
+                # Si la palabra es muy larga, dividirla con guiones
+                if word_length > width and current_length == 0:
+                    # Intentar dividir con hyphenation
+                    hyphenated = hyphenator.inserted(word, hyphen='-')
+                    parts = hyphenated.split('-')
+                    
+                    for i, part in enumerate(parts):
+                        if i < len(parts) - 1:
+                            part = part + '-'
+                        
+                        if current_length + len(part) <= width:
+                            current_line.append(part)
+                            current_length += len(part)
+                        else:
+                            if current_line:
+                                lines.append(' '.join(current_line))
+                            current_line = [part]
+                            current_length = len(part)
+                else:
+                    # Guardar línea actual y empezar nueva
+                    if current_line:
+                        lines.append(' '.join(current_line))
+                    current_line = [word]
+                    current_length = word_length
+        
+        if current_line:
+            lines.append(' '.join(current_line))
+        
+        return lines if lines else ['']
+
     def draw_line(text, font="Courier", size=10, leading=14):
         """Dibuja líneas con salto automático si el texto es largo"""
         nonlocal y
         c.setFont(font, size)
         # Ajustar el ancho del wrap según el espacio disponible
-        wrapped = textwrap.wrap(text, width=chars_per_line)
+        wrapped = wrap_text_with_hyphen(text, chars_per_line)
         for line in wrapped:
             # Verificar que la línea no exceda el ancho disponible
             text_width = c.stringWidth(line, font, size)
