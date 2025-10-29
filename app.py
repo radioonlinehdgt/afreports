@@ -271,7 +271,7 @@ def generate():
 
     # Items
     for name, amt in items:
-        amt_str = "${:,.2f}".format(amt)
+        amt_str = "${:,.2f} USD".format(amt)
         name_width = available_width - c.stringWidth(amt_str + " ", font_name, font_size)
         
         # Truncar nombre si es necesario
@@ -288,7 +288,7 @@ def generate():
 
     # Total
     draw_separator()
-    total_str = f"${total:,.2f}"
+    total_str = f"${total:,.2f} USD"
     total_label = "TOTAL"
     text_width = c.stringWidth(total_label + total_str, font_name, font_size)
     space_width = c.stringWidth(" ", font_name, font_size)
@@ -298,13 +298,6 @@ def generate():
     
     draw_text("End of Report")
     draw_text("")  # Espacio
-    draw_text("")  # Espacio adicional
-    draw_text("")  # Espacio adicional
-    draw_text("")  # Espacio adicional
-    draw_text("")  # Espacio adicional
-    draw_text("")  # Espacio adicional
-    draw_text("")  # Espacio adicional
-    draw_text("")  # Espacio adicional
     draw_text("")  # Espacio adicional
     
     # Instrucciones de facturación
@@ -331,5 +324,3 @@ def generate():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
-
-
