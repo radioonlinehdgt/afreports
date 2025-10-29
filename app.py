@@ -303,12 +303,12 @@ def generate():
     # Instrucciones de facturación
     draw_text("Could you please send to billing@afstream.com the corresponding invoice?")
     draw_text("")  # Espacio
-    draw_text("Billing information:")
+    draw_text("Billing information:", bold=True)
     draw_text("AF STREAM, LLC")
     draw_text("1549 NE 123rd St")
     draw_text("North Miami, FL 33161")
     draw_text("")  # Espacio
-    draw_text("In the details of the Invoice, write the following:")
+    draw_text("In the details of the Invoice, write the following:", bold=True)
     # Extraer mes y año del campo month
     month_parts = month.split()
     month_name = month_parts[0] if len(month_parts) > 0 else month
