@@ -260,7 +260,7 @@ def generate():
     
     # Encabezado
     draw_text("AF STREAM", "Courier", 11, bold=True)
-    draw_text(f"Monthly Revenue Report – {month}")
+    draw_text(f"Revenue Report for the month of {month}")
     draw_text(f"Date: {date}")
     draw_text(f"Agreement Id: {agreement}")
     draw_separator()
@@ -297,6 +297,23 @@ def generate():
     draw_separator()
     
     draw_text("End of Report")
+    draw_text("")  # Espacio
+    draw_text("")  # Espacio adicional
+    
+    # Instrucciones de facturación
+    draw_text("Could you please send to billing@afstream.com the corresponding invoice?")
+    draw_text("")  # Espacio
+    draw_text("Billing information:")
+    draw_text("AF STREAM, LLC")
+    draw_text("1549 NE 123rd St")
+    draw_text("North Miami, FL 33161")
+    draw_text("")  # Espacio
+    draw_text("In the details of the Invoice, write the following:")
+    # Extraer mes y año del campo month
+    month_parts = month.split()
+    month_name = month_parts[0] if len(month_parts) > 0 else month
+    year_value = month_parts[1] if len(month_parts) > 1 else ""
+    draw_text(f"Audio ad revenue on our digital properties in {month_name} {year_value}")
 
     c.showPage()
     c.save()
@@ -307,6 +324,3 @@ def generate():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
-
-
-
