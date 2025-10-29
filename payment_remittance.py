@@ -234,11 +234,11 @@ def generate():
     x = margin
     y = page_height - margin
     
-    font_name = "Courier"
+    font_name = "Helvetica"
     font_size = 10
     line_height = 14
     
-    def draw_text(text, font="Courier", size=10, bold=False):
+    def draw_text(text, font="Helvetica", size=10, bold=False):
         nonlocal y
         if bold:
             c.setFont(f"{font}-Bold", size)
@@ -248,7 +248,7 @@ def generate():
         y -= line_height
     
     # Título
-    draw_text("PAYMENT REMITTANCE ADVICE", "Courier", 12, bold=True)
+    draw_text("PAYMENT REMITTANCE ADVICE", "Helvetica", 12, bold=True)
     draw_text(f"Performance Period: {performance_period}")
     draw_text("")  # Espacio
     
