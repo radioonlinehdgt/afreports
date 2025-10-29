@@ -299,6 +299,10 @@ def generate():
     draw_text("End of Report")
     draw_text("")  # Espacio
     draw_text("")  # Espacio adicional
+    draw_text("")  # Espacio adicional
+    draw_text("")  # Espacio adicional
+    draw_text("")  # Espacio adicional
+    draw_text("")  # Espacio adicional
     
     # Instrucciones de facturación
     draw_text("Could you please send to billing@afstream.com the corresponding invoice?")
@@ -324,3 +328,4 @@ def generate():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+
