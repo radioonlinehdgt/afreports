@@ -205,6 +205,11 @@ document.getElementById('agreement').addEventListener('change', function() {
 def index():
     return render_template_string(INDEX_HTML)
 
+@app.route("/health")
+def health():
+    """Health check endpoint for Render"""
+    return {"status": "healthy"}, 200
+
 @app.route("/generate", methods=["POST"])
 @requires_auth
 def generate():
@@ -311,4 +316,5 @@ def generate():
     return send_file(buffer, as_attachment=True, download_name=filename, mimetype='application/pdf')
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5001)))
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
