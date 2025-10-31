@@ -3,6 +3,8 @@ from flask import Flask, request, render_template_string, send_file, Response
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import cm
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 import os
 from functools import wraps
 
@@ -225,6 +227,15 @@ def generate():
     if not beneficiary:
         return "Agreement ID not found", 400
     
+    # Registrar fuente con soporte Unicode
+    try:
+        pdfmetrics.registerFont(TTFont('DejaVuSansMono', '/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf'))
+        pdfmetrics.registerFont(TTFont('DejaVuSansMono-Bold', '/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf'))
+        font_name = "DejaVuSansMono"
+    except:
+        # Fallback a Courier si DejaVu no está disponible
+        font_name = "Courier"
+    
     # Crear PDF
     buffer = BytesIO()
     page_width, page_height = letter
@@ -234,21 +245,25 @@ def generate():
     x = margin
     y = page_height - margin
     
-    font_name = "Helvetica"
     font_size = 10
     line_height = 14
     
-    def draw_text(text, font="Helvetica", size=10, bold=False):
+    def draw_text(text, font=None, size=10, bold=False):
         nonlocal y
+        if font is None:
+            font = font_name
         if bold:
-            c.setFont(f"{font}-Bold", size)
+            if font_name == "DejaVuSansMono":
+                c.setFont("DejaVuSansMono-Bold", size)
+            else:
+                c.setFont(f"{font}-Bold", size)
         else:
             c.setFont(font, size)
         c.drawString(x, y, text)
         y -= line_height
     
     # Título
-    draw_text("PAYMENT REMITTANCE ADVICE", "Helvetica", 12, bold=True)
+    draw_text("PAYMENT REMITTANCE ADVICE", None, 12, bold=True)
     draw_text(f"Performance Period: {performance_period}")
     draw_text("")  # Espacio
     
