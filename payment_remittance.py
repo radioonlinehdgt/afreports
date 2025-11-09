@@ -52,8 +52,8 @@ BENEFICIARIES = {
     "157fbb43f471431ca5abbc1082d59570610c6eb7": {
         "company_name": "ANA SOPHIA TAMAYO CORDERO",
         "address_line1": "Colambo and Limoncillo 781-31",
-        "address_line2": "Loja, Ecuador",
-        "address_line3": "-",
+        "address_line2": "Loja",
+        "address_line3": "Ecuador",
         "phone": "+593 98 800 4635",
         "email": "ana.tamayo@ideashap.com",
         "website": "-",
@@ -67,8 +67,8 @@ BENEFICIARIES = {
     "PENDIENTE": {
         "company_name": "Suizo",
         "address_line1": "Colambo and Limoncillo 781-31",
-        "address_line2": "Loja, Ecuador",
-        "address_line3": "-",
+        "address_line2": "Loja",
+        "address_line3": "Ecuador",
         "phone": "+593 98 800 4635",
         "email": "ana.tamayo@ideashap.com",
         "website": "-",
