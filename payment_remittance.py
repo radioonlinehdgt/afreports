@@ -294,8 +294,9 @@ def generate():
     
     # Description
     draw_text("DESCRIPTION:", bold=True)
-    draw_text(f"Net payment for audio ads delivered on {beneficiary['company_name']}'s digital")
-    draw_text("properties using AF Stream's ad delivery infrastructure.")
+    draw_text(f"Net payment for audio ads delivered in {performance_period} on")
+    draw_text(f"{beneficiary['company_name']}'s digital properties using AF Stream's ad")
+    draw_text("delivery infrastructure.")
     draw_text("")  # Espacio
     
     # Amount
