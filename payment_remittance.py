@@ -34,7 +34,7 @@ def requires_auth(f):
 
 # --- Datos de clientes/beneficiarios ---
 BENEFICIARIES = {
-    "1f9730e1c32a48aba7284dc8e5496cc7f373b2be": {
+    "3f36b96871a64b1387389c433dca29e4b7d6e8d2": {
         "company_name": "BIDGEAR JOINT STOCK COMPANY",
         "address_line1": "Tầng 3, Số 1, lô 10A, Khu đô thị mới Trung Yên,",
         "address_line2": "Phường Trung Hòa, Quận Cầu Giấy,",
