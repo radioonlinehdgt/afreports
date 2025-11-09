@@ -5,6 +5,9 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.units import cm
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.lib.styles import ParagraphStyle
+from reportlab.platypus import Paragraph
+from reportlab.lib.enums import TA_JUSTIFY
 import os
 from functools import wraps
 
@@ -264,6 +267,39 @@ def generate():
         c.drawString(x, y, text)
         y -= line_height
     
+    def draw_wrapped_text(text, font=None, size=10):
+        """Dibuja texto con wrapping automático y justificación"""
+        nonlocal y
+        if font is None:
+            font = font_name
+        
+        # Calcular ancho disponible
+        available_width = page_width - 2 * margin
+        
+        # Crear estilo para el párrafo justificado
+        style = ParagraphStyle(
+            'CustomStyle',
+            fontName=font,
+            fontSize=size,
+            leading=line_height,
+            leftIndent=0,
+            rightIndent=0,
+            alignment=TA_JUSTIFY,
+            wordWrap='LTR',
+            spaceBefore=0,
+            spaceAfter=0
+        )
+        
+        # Crear párrafo
+        para = Paragraph(text, style)
+        
+        # Calcular alto necesario
+        w, h = para.wrap(available_width, 1000)
+        
+        # Dibujar el párrafo
+        para.drawOn(c, x, y - h + line_height)
+        y -= h
+    
     # Título
     draw_text("PAYMENT REMITTANCE ADVICE", None, 12, bold=True)
     draw_text(f"Performance Period: {performance_period}")
@@ -294,9 +330,8 @@ def generate():
     
     # Description
     draw_text("DESCRIPTION:", bold=True)
-    draw_text(f"Net payment for audio ads delivered in {performance_period} on")
-    draw_text(f"{beneficiary['company_name']}'s digital properties using AF Stream's ad")
-    draw_text("delivery infrastructure.")
+    description_text = f"Net payment for audio ads delivered in {performance_period} on {beneficiary['company_name']}'s digital properties using AF Stream's ad delivery infrastructure."
+    draw_wrapped_text(description_text)
     draw_text("")  # Espacio
     
     # Amount
@@ -320,8 +355,7 @@ def generate():
     draw_text("")  # Espacio
     
     # Agreement ID
-    draw_text("Agreement ID:")
-    draw_text(agreement)
+    draw_text(f"Agreement ID: {agreement}")
     draw_text("")  # Espacio
     
     draw_text("End of Payment Advice")
