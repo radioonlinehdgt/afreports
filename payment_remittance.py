@@ -49,20 +49,20 @@ BENEFICIARIES = {
         "routing_number": "061120084",
         "account_number": "4030000434322"
     },
-    "DEC022022": {
+    "157fbb43f471431ca5abbc1082d59570610c6eb7": {
         "company_name": "ANA SOPHIA TAMAYO CORDERO",
-        "address_line1": "Colambo y Limoncillo 781-31",
+        "address_line1": "Colambo and Limoncillo 781-31",
         "address_line2": "Loja, Ecuador",
-        "address_line3": "",
-        "phone": "+593 99 405 3325",
-        "email": "ana.tamayo@unl.edu.ec",
-        "website": "",
+        "address_line3": "-",
+        "phone": "+593 98 800 4635",
+        "email": "ana.tamayo@ideashap.com",
+        "website": "-",
         "beneficiary_name": "Ana Sophia Tamayo Cordero",
-        "account_type": "Savings",
-        "bank_name": "Banco [Pendiente]",
-        "bank_address": "[Pendiente]",
-        "routing_number": "[Pendiente]",
-        "account_number": "[Pendiente]"
+        "account_type": "Checking",
+        "bank_name": "First Century Bank",
+        "bank_address": "1731 N Elm St Commerce, GA 30529, USA",
+        "routing_number": "061120084",
+        "account_number": "4027809988895"
     }
 }
 
