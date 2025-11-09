@@ -297,7 +297,7 @@ def generate():
         w, h = para.wrap(available_width, 1000)
         
         # Dibujar el párrafo con pequeño espacio arriba
-        para.drawOn(c, x, y - h + 2)  # +7 puntos = medio espacio de línea
+        para.drawOn(c, x, y - h + 11)  # +7 puntos = medio espacio de línea
         y -= h
     
     # Título
