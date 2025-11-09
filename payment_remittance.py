@@ -297,7 +297,7 @@ def generate():
         w, h = para.wrap(available_width, 1000)
         
         # Dibujar el párrafo
-        para.drawOn(c, x, y - h + line_height)
+        para.drawOn(c, x, y - h)
         y -= h
     
     # Título
