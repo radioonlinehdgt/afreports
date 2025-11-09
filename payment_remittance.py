@@ -63,6 +63,21 @@ BENEFICIARIES = {
         "bank_address": "1731 N Elm St Commerce, GA 30529, USA",
         "routing_number": "061120084",
         "account_number": "4027809988895"
+    },
+    "PENDIENTE": {
+        "company_name": "Suizo",
+        "address_line1": "Colambo and Limoncillo 781-31",
+        "address_line2": "Loja, Ecuador",
+        "address_line3": "-",
+        "phone": "+593 98 800 4635",
+        "email": "ana.tamayo@ideashap.com",
+        "website": "-",
+        "beneficiary_name": "Ana Sophia Tamayo Cordero",
+        "account_type": "Checking",
+        "bank_name": "First Century Bank",
+        "bank_address": "1731 N Elm St Commerce, GA 30529, USA",
+        "routing_number": "061120084",
+        "account_number": "4027809988895"
     }
 }
 
