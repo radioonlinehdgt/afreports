@@ -227,13 +227,15 @@ def generate():
     if not beneficiary:
         return "Agreement ID not found", 400
     
-    # Registrar fuente con soporte Unicode
+    # Registrar fuente monoespaciada con soporte Unicode
     try:
-        pdfmetrics.registerFont(TTFont('DejaVuSansMono', '/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf'))
-        pdfmetrics.registerFont(TTFont('DejaVuSansMono-Bold', '/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf'))
-        font_name = "DejaVuSansMono"
-    except:
-        # Fallback a Courier si DejaVu no está disponible
+        font_dir = os.path.join(os.path.dirname(__file__), 'fonts')
+        pdfmetrics.registerFont(TTFont('SourceCodePro', os.path.join(font_dir, 'SourceCodePro-Regular.ttf')))
+        pdfmetrics.registerFont(TTFont('SourceCodePro-Bold', os.path.join(font_dir, 'SourceCodePro-Bold.ttf')))
+        font_name = "SourceCodePro"
+    except Exception as e:
+        # Fallback a Courier si la fuente no está disponible
+        print(f"Warning: Could not load SourceCodePro font: {e}")
         font_name = "Courier"
     
     # Crear PDF
@@ -253,8 +255,8 @@ def generate():
         if font is None:
             font = font_name
         if bold:
-            if font_name == "DejaVuSansMono":
-                c.setFont("DejaVuSansMono-Bold", size)
+            if font_name == "SourceCodePro":
+                c.setFont("SourceCodePro-Bold", size)
             else:
                 c.setFont(f"{font}-Bold", size)
         else:
