@@ -296,8 +296,8 @@ def generate():
         # Calcular alto necesario
         w, h = para.wrap(available_width, 1000)
         
-        # Dibujar el párrafo
-        para.drawOn(c, x, y - h)
+        # Dibujar el párrafo con pequeño espacio arriba
+        para.drawOn(c, x, y - h + 7)  # +7 puntos = medio espacio de línea
         y -= h
     
     # Título
