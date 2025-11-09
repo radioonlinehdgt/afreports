@@ -32,7 +32,7 @@ def requires_auth(f):
 
 # --- Diccionario de contratos activos ---
 CONTRACTS = {
-    "1f9730e1c32a48aba7284dc8e5496cc7f373b2be": "BIDGEAR JOINT STOCK COMPANY",
+    "3f36b96871a64b1387389c433dca29e4b7d6e8d2": "BIDGEAR JOINT STOCK COMPANY",
     "157fbb43f471431ca5abbc1082d59570610c6eb7": "ANA SOPHIA TAMAYO CORDERO",
     "PENDIENTE": "Suizo"
 }
@@ -325,5 +325,6 @@ def generate():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+
 
 
