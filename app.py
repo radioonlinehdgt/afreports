@@ -320,11 +320,13 @@ def generate():
     c.save()
     buffer.seek(0)
 
-    filename = f"Revenue_{month.replace(' ','_')}.pdf"
+    #filename = f"Revenue_{month.replace(' ','_')}.pdf"
+    filename = f"Revenue_{owner.replace(' ','_')}_{month.replace(' ','_')}.pdf"
     return send_file(buffer, as_attachment=True, download_name=filename, mimetype='application/pdf')
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+
 
 
 
