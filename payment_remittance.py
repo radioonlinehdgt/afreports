@@ -379,7 +379,8 @@ def generate():
     c.save()
     buffer.seek(0)
     
-    filename = f"Payment_Remittance_{performance_period.replace(' ', '_')}.pdf"
+    #filename = f"Payment_Remittance_{performance_period.replace(' ', '_')}.pdf"
+    filename = f"Payment_Remittance_{beneficiary['company_name'].replace(' ', '_')}_{performance_period.replace(' ', '_')}.pdf"
     return send_file(buffer, as_attachment=True, download_name=filename, mimetype='application/pdf')
 
 if __name__ == "__main__":
