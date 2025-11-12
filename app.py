@@ -34,7 +34,7 @@ def requires_auth(f):
 CONTRACTS = {
     "3f36b96871a64b1387389c433dca29e4b7d6e8d2": "BIDGEAR JOINT STOCK COMPANY",
     "157fbb43f471431ca5abbc1082d59570610c6eb7": "ANA SOPHIA TAMAYO CORDERO",
-    "PENDIENTE": "Suizo"
+    "b97f527a4dfd4c93b31dfb9a263cd8f7e9ea82a2": "JACQUELINE SCHNEIDER"
 }
 
 # --- Interfaz mejorada ---
