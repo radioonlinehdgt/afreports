@@ -64,20 +64,20 @@ BENEFICIARIES = {
         "routing_number": "061120084",
         "account_number": "4027809988895"
     },
-    "PENDIENTE": {
-        "company_name": "Suizo",
-        "address_line1": "Colambo and Limoncillo 781-31",
-        "address_line2": "Loja",
-        "address_line3": "Ecuador",
-        "phone": "+593 98 800 4635",
-        "email": "ana.tamayo@ideashap.com",
+    "b97f527a4dfd4c93b31dfb9a263cd8f7e9ea82a2": {
+        "company_name": "JACQUELINE SCHNEIDER",
+        "address_line1": "Lierenstrasse 41",
+        "address_line2": "5417 Untersiggenthal",
+        "address_line3": "Suiza",
+        "phone": "+49 1522 3926439",
+        "email": "flamecomics@protonmail.com",
         "website": "-",
-        "beneficiary_name": "Ana Sophia Tamayo Cordero",
-        "account_type": "Checking",
-        "bank_name": "First Century Bank",
-        "bank_address": "1731 N Elm St Commerce, GA 30529, USA",
-        "routing_number": "061120084",
-        "account_number": "4027809988895"
+        "beneficiary_name": "payment@upaste.me",
+        "account_type": "PayPal",
+        "bank_name": "PayPal",
+        "bank_address": "-",
+        "routing_number": "-",
+        "account_number": "-"
     }
 }
 
@@ -312,7 +312,7 @@ def generate():
         w, h = para.wrap(available_width, 1000)
         
         # Dibujar el párrafo con pequeño espacio arriba
-        para.drawOn(c, x, y - h + 10)  # +7 puntos = medio espacio de línea
+        para.drawOn(c, x, y - h + 10)
         y -= h
     
     # Título
@@ -354,19 +354,28 @@ def generate():
     draw_text(f"$ {float(payment_amount):,.2f}")
     draw_text("")  # Espacio
     
-    # Payment Details
+    # Payment Details - Detectar PayPal vs Cuenta Bancaria
     draw_text("PAYMENT DETAILS", bold=True)
     draw_text(f"Document Reference: Invoice No. {invoice_no}")
     draw_text(f"Payment Date: {payment_date}")
     draw_text("Payment Currency: USD")
     draw_text(f"Payment Amount: {float(payment_amount):,.2f}")
     draw_text(f"Payment Reference Number: {payment_ref}")
-    draw_text(f"Beneficiary Name: {beneficiary['beneficiary_name']}")
-    draw_text(f"Account Type: {beneficiary['account_type']}")
-    draw_text(f"Bank Name: {beneficiary['bank_name']}")
-    draw_text(f"Bank Address: {beneficiary['bank_address']}")
-    draw_text(f"Routing Number: {beneficiary['routing_number']}")
-    draw_text(f"Account Number: {beneficiary['account_number']}")
+    
+    # Detectar si es PayPal o cuenta bancaria
+    if beneficiary['account_type'].lower() == 'paypal':
+        # Información para PayPal
+        draw_text(f"Payment Method: PayPal")
+        draw_text(f"PayPal Account: {beneficiary['beneficiary_name']}")
+    else:
+        # Información para cuenta bancaria tradicional
+        draw_text(f"Beneficiary Name: {beneficiary['beneficiary_name']}")
+        draw_text(f"Account Type: {beneficiary['account_type']}")
+        draw_text(f"Bank Name: {beneficiary['bank_name']}")
+        draw_text(f"Bank Address: {beneficiary['bank_address']}")
+        draw_text(f"Routing Number: {beneficiary['routing_number']}")
+        draw_text(f"Account Number: {beneficiary['account_number']}")
+    
     draw_text("")  # Espacio
     
     # Agreement ID
@@ -379,7 +388,6 @@ def generate():
     c.save()
     buffer.seek(0)
     
-    #filename = f"Payment_Remittance_{performance_period.replace(' ', '_')}.pdf"
     filename = f"Payment_Remittance_{beneficiary['company_name'].replace(' ', '_')}_{performance_period.replace(' ', '_')}.pdf"
     return send_file(buffer, as_attachment=True, download_name=filename, mimetype='application/pdf')
 
